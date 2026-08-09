@@ -6,3 +6,6 @@ verification_code.txt
 *.pid
 dist/
 src/adapters-data.ts
+
+# Bun compile temp artifacts
+.*.bun-build

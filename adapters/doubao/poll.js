@@ -16,21 +16,36 @@ function(args) {
   }
   const beforeCount = parseInt(args.before_count) || 0;
   const prevLen = parseInt(args.prev_len) || 0;
-  const mdCount = document.querySelectorAll('[class*="markdown-body"]').length;
+  // 2026-08: doubao web switched from markdown-body to md-box-root for AI answer containers.
+  // User messages share md-box-root, so filter them out (user bubbles are right-aligned: justify-end ancestor).
+  const isUserMsg = (el) => {
+    let cur = el.parentElement;
+    for (let i = 0; i < 8 && cur; i++) {
+      if (typeof cur.className === 'string' && cur.className.includes('justify-end')) return true;
+      cur = cur.parentElement;
+    }
+    return false;
+  };
+  const aiMds = Array.from(document.querySelectorAll('[class*="markdown-body"], [class*="md-box-root"]')).filter(md => !isUserMsg(md));
+  const mdCount = aiMds.length;
 
   if (mdCount <= beforeCount) {
     return { status: 'waiting', mdCount, beforeCount };
   }
 
-  const newMd = document.querySelectorAll('[class*="markdown-body"]')[mdCount - 1];
+  const newMd = aiMds[mdCount - 1];
   if (!newMd) return { status: 'waiting', mdCount, beforeCount };
 
   const text = newMd.innerText?.trim() || '';
   const len = text.length;
 
   if (len > 0 && len === prevLen) {
+    // Match the thinking-depth trigger button exactly (exclude "快速\n新" stacked buttons)
     const thinkBtn = Array.from(document.querySelectorAll('button'))
-      .find(b => /^(快速|思考|专家)/.test(b.innerText?.trim()) && b.querySelector('button') && b.getBoundingClientRect().width > 0);
+      .find(b => {
+        const t = (b.innerText?.trim() || '').replace(/\n/g, ' ');
+        return /^(快速|思考|专家)$/.test(t) && b.querySelector('button') && b.getBoundingClientRect().width > 0;
+      });
     const thinkingMode = thinkBtn?.innerText?.trim() || '快速';
 
     let references = '';

@@ -21,10 +21,12 @@ async function() {
       !/^(AI|PPT|快速|思考|专家|更多|翻译|编程|解题)/.test(t);
   });
   const hasAvatar = !!document.querySelector('[class*="avatar"], [class*="Avatar"]');
+  // Login signal via auth cookies (robust against page redesigns and CJK usernames)
+  const hasCookie = /(sessionid|passport|session_token|sso_uid|sessionid_ss)/i.test(document.cookie || '');
   const hasFiber = ta ? !!Object.keys(ta).find(k => k.startsWith('__reactFiber')) : false;
 
   return {
-    logged_in: hasUsername || hasAvatar,
+    logged_in: hasUsername || hasAvatar || hasCookie,
     input_ready: inputReady && hasFiber,
     url: location.href,
     title: document.title

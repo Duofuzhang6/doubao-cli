@@ -217,7 +217,17 @@ async function(args) {
   else submitEl = ta || ce;
 
   const isSkillMode = skillModes.has(args.mode);
-  const beforeCount = document.querySelectorAll('[class*="markdown-body"]').length;
+  // 2026-08: doubao web switched from markdown-body to md-box-root for AI answer containers.
+  // Count only AI answers (user bubbles are right-aligned: justify-end ancestor) to stay consistent with poll.
+  const isUserMsg = (el) => {
+    let cur = el.parentElement;
+    for (let i = 0; i < 8 && cur; i++) {
+      if (typeof cur.className === 'string' && cur.className.includes('justify-end')) return true;
+      cur = cur.parentElement;
+    }
+    return false;
+  };
+  const beforeCount = Array.from(document.querySelectorAll('[class*="markdown-body"], [class*="md-box-root"]')).filter(md => !isUserMsg(md)).length;
 
   // ── Set value ──
   if (submitEl.tagName === 'TEXTAREA') {
