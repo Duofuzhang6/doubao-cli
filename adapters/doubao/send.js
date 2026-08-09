@@ -243,6 +243,10 @@ async function(args) {
     document.execCommand('insertText', false, args.message);
   }
 
+  // Let React process the input event and sync its controlled-component state
+  // before triggering Enter — otherwise the submit handler sees an empty value.
+  await new Promise(res => setTimeout(res, 300));
+
   // ── Submit ──
   let submitted = false;
 
