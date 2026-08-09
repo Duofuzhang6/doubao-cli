@@ -4,6 +4,32 @@ A command-line interface for interacting with Doubao AI through browser automati
 
 Built on top of [bb-browser](https://github.com/epiral/bb-browser) — a CLI + MCP server for programmatic browser control.
 
+## ⚠️ Important (2026-08 fork notes)
+
+This fork fixes compatibility with the **August 2026 Doubao web redesign** (upstream unmaintained since May 2026):
+
+- Doubao switched AI answer containers from `markdown-body` to `md-box-root` — `poll` / `last-response` / `send` now match both, and filter out user-message bubbles (right-aligned `justify-end` ancestor) so only AI answers are counted.
+- Login detection now also checks auth cookies — CJK usernames never matched the original `/^[A-Z]/` button heuristic, and the redesigned page has no `avatar` element.
+
+### bb-browser version requirement
+
+**Pin `bb-browser@0.11.x` (tested with 0.11.3).** The daemon protocol changed in 0.14+ (`action` → `method`), which breaks doubao-cli's requests (`Daemon not running` / `Unknown method`). The daemon listens on `127.0.0.1:19824` and connects to Chrome's CDP port (default `19825` — the same port doubao-cli launches Chrome with).
+
+```bash
+npm i -g bb-browser@0.11.3
+bb-browser daemon          # start the daemon before using doubao-cli
+```
+
+### Building from source
+
+The binaries are Bun-compiled (`build.ts`), so `npm install` alone is not enough:
+
+```bash
+npm install
+bun generate-adapters.ts
+bun build src/cli.ts --compile --target bun-darwin-arm64 --minify --outfile dist/doubao-cli-darwin-arm64
+```
+
 ## Quick Start
 
 ### Option 1: Download Binary (Recommended)
